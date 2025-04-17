@@ -70,6 +70,9 @@ export function SyncScanner({ on_text }: { on_text: (s: string) => void }) {
     }, [try_])
 
 
+    // QrScanner.createQrEngine().then(v => alert(v))
+
+
     return cam_rejected ? <>rejected <button onClick={() => {
         set_cam_rejected(false)
         set_try_(Symbol())
@@ -85,7 +88,7 @@ export function QRScan({ cam, on_text }: { cam: MediaStream, on_text: (s: string
 
     const [attempt_num, set_attempt_num] = useState(0)
 
-    const qrEngine = useMemo(() => QrScanner.createQrEngine(), [])
+    // const qrEngine = useMemo(() => QrScanner.createQrEngine(), [])
 
     const text_prev = useMemo(() => ({ value: "---", n: 0 }), [])
     text_prev.value = text
@@ -101,32 +104,47 @@ export function QRScan({ cam, on_text }: { cam: MediaStream, on_text: (s: string
         //     set_text("BarcodeDetector not allowed")
         //     return
         // }
-        const id = setInterval(() => {
+        // const id = setInterval(() => {
 
-            qrEngine.then(qrEngine => QrScanner.scanImage(vid_ref.current!, { qrEngine })).then(res => {
-                console.log(res);
-                if (res.data === "") {
-                    return
-                }
+        //     qrEngine.then(qrEngine => QrScanner.scanImage(vid_ref.current!, { qrEngine })).then(res => {
+        //         console.log(res);
+        //         if (res.data === "") {
+        //             return
+        //         }
 
-                if (text_prev.value !== res.data) {
-                    on_text(res.data)
-                }
-                set_text(res.data)
-                set_see(true)
-                set_attempt_num(text_prev.n + 1)
-            }).catch(() => {
+        //         if (text_prev.value !== res.data) {
+        //             on_text(res.data)
+        //         }
+        //         set_text(res.data)
+        //         set_see(true)
+        //         set_attempt_num(text_prev.n + 1)
+        //     }).catch(() => {
+        //         set_see(false)
+        //         set_attempt_num(text_prev.n + 1)
+        //     })
+        //     // const s = detector.getState()
+
+        //     // detector.detect(vid_ref.current!)
+        // }, 100)
+        // return () => {
+        //     clearInterval(id)
+        // }
+        const qr = new QrScanner(vid_ref.current!, v => {
+
+            set_text(v.data)
+            set_see(true)
+            set_attempt_num(text_prev.n++)
+        }, {
+            onDecodeError: () => {
                 set_see(false)
-                set_attempt_num(text_prev.n + 1)
-            })
-            // const s = detector.getState()
-
-            // detector.detect(vid_ref.current!)
-        }, 100)
+                set_attempt_num(text_prev.n++)
+            }
+        })
+        qr.start()
         return () => {
-            clearInterval(id)
+            qr.destroy()
         }
-    }, [text_prev, qrEngine, on_text])
+    }, [text_prev, on_text])
 
     return <>
         {text}
@@ -135,15 +153,15 @@ export function QRScan({ cam, on_text }: { cam: MediaStream, on_text: (s: string
         <button onClick={() => {
             alert(vid_ref.current)
 
-            qrEngine.then(qrEngine => QrScanner.scanImage(vid_ref.current!, { qrEngine })).then(res => {
-                alert("t:" + res.data + ";c:" + res.cornerPoints)
-            }).catch((e: Error) => {
-                alert("error " + (typeof e) + " " + e)
-                alert(e.name)
-                alert(e.message)
-                alert(e.cause)
-                alert(e.stack)
-            })
+            // qrEngine.then(qrEngine => QrScanner.scanImage(vid_ref.current!, { qrEngine, })).then(res => {
+            //     alert("t:" + res.data + ";c:" + res.cornerPoints)
+            // }).catch((e: Error) => {
+            //     alert("error " + (typeof e) + " " + e)
+            //     alert(e.name)
+            //     alert(e.message)
+            //     alert(e.cause)
+            //     alert(e.stack)
+            // })
         }}>test</button>
         <br />
         <video ref={vid_ref} muted autoPlay playsInline style={{ maxWidth: "80vw" }} />
