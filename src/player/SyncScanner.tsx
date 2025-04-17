@@ -57,7 +57,7 @@ export function SyncScanner({ on_text }: { on_text: (s: string) => void }) {
             if (cancel) { return }
             console.log("start");
 
-            started = navigator.mediaDevices.getUserMedia({ video: true })
+            started = navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } } })
             started.then(v => set_cam(v)).catch(() => set_cam_rejected(true))
         }, 100)
         return () => {
