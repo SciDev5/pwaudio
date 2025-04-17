@@ -83,8 +83,13 @@ export function QRScan({ cam, on_text }: { cam: MediaStream, on_text: (s: string
     const [text, set_text] = useState("---")
     const [see, set_see] = useState(false)
 
-    const text_prev = useMemo(() => ({ value: "---" }), [])
+    const [attempt_num, set_attempt_num] = useState(0)
+
+    const qrEngine = useMemo(() => QrScanner.createQrEngine(), [])
+
+    const text_prev = useMemo(() => ({ value: "---", n: 0 }), [])
     text_prev.value = text
+    text_prev.n = attempt_num
 
     useEffect(() => {
         vid_ref.current!.srcObject = cam
@@ -97,16 +102,22 @@ export function QRScan({ cam, on_text }: { cam: MediaStream, on_text: (s: string
         //     return
         // }
         const id = setInterval(() => {
-            QrScanner.scanImage(vid_ref.current!, { scanRegion: null }).then(res => {
+
+            qrEngine.then(qrEngine => QrScanner.scanImage(vid_ref.current!, { qrEngine })).then(res => {
                 console.log(res);
+                if (res.data === "") {
+                    return
+                }
 
                 if (text_prev.value !== res.data) {
                     on_text(res.data)
                 }
                 set_text(res.data)
                 set_see(true)
+                set_attempt_num(text_prev.n + 1)
             }).catch(() => {
                 set_see(false)
+                set_attempt_num(text_prev.n + 1)
             })
             // const s = detector.getState()
 
@@ -115,13 +126,23 @@ export function QRScan({ cam, on_text }: { cam: MediaStream, on_text: (s: string
         return () => {
             clearInterval(id)
         }
-    }, [text_prev, on_text])
+    }, [text_prev, qrEngine, on_text])
 
     return <>
         {text}
         <br />
-        {see ? "Y" : "N"}
+        {see ? "Y" : "N"} {attempt_num}
+        <button onClick={() => {
+            alert(vid_ref.current)
+
+            qrEngine.then(qrEngine => QrScanner.scanImage(vid_ref.current!, { qrEngine })).then(res => {
+                alert("t:" + res.data + ";c:" + res.cornerPoints)
+            }).catch((e) => {
+                alert("no qr code")
+                throw e
+            })
+        }}>test</button>
         <br />
-        <video ref={vid_ref} autoPlay playsInline />
+        <video ref={vid_ref} muted autoPlay playsInline style={{ maxWidth: "80vw" }} />
     </>
 }
