@@ -122,6 +122,6 @@ export function QRScan({ cam, on_text }: { cam: MediaStream, on_text: (s: string
         <br />
         {see ? "Y" : "N"}
         <br />
-        <video ref={vid_ref} autoPlay />
+        <video ref={vid_ref} autoPlay playsInline />
     </>
 }
