@@ -1,28 +1,8 @@
 "use client"
 
 import { SyntheticEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { meta_from_song, Song } from "./Song";
 
-// const actx = new AudioContext()
-
-function media_metadata(init?: MediaMetadataInit): MediaMetadata {
-    return "MediaMetadata" in globalThis ? new MediaMetadata(init) : init as MediaMetadata
-}
-
-function meta_from_song({ title, src, id }: Song): { id: string, meta: MediaMetadata, src: string } {
-    return {
-        id,
-        meta: media_metadata({
-            title,
-            artist: ":3",
-            album: "none",
-            artwork: [{
-                src: "./icon-512x512.png", sizes: "512x512",
-                type: "image/png",
-            }],
-        }),
-        src,
-    }
-}
 
 function bind_media_actions(actions: { [k in MediaSessionAction]?: MediaSessionActionHandler }) {
     for (const type of ["nexttrack", "pause", "play", "previoustrack", "seekbackward", "seekforward", "seekto", "skipad", "stop"] satisfies MediaSessionAction[]) {
@@ -102,11 +82,6 @@ export class Controls {
 
 
 
-interface Song {
-    id: string,
-    src: string,
-    title: string,
-}
 
 export function AControls({ controls }: { controls: Controls }) {
     const [playing, set_playing] = useVar(controls.playing)
@@ -163,6 +138,13 @@ export function AudioThing({
 }) {
     const meta_current = useMemo(() => meta_from_song(current), [current])
     const meta_next = useMemo(() => next && meta_from_song(next), [next])
+
+    useEffect(() => {
+        navigator.mediaSession.metadata = meta_current.meta
+        return () => {
+            navigator.mediaSession.metadata = null
+        }
+    }, [meta_current])
 
     return (<>{
         [{ ...meta_current, is_current: true }, ...meta_next && [{ ...meta_next, is_current: false }] || []]
