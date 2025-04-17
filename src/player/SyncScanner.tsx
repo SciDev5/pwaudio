@@ -46,37 +46,39 @@ export function SyncScanner({ on_text }: { on_text: (s: string) => void }) {
     //     return <SyncScannerInner />
     // }
     // export function SyncScannerInner() {
-    const [try_, set_try_] = useState(Symbol())
-    const [cam, set_cam] = useState<MediaStream | null>()
-    const [cam_rejected, set_cam_rejected] = useState(false)
+    // const [try_, set_try_] = useState(Symbol())
+    // const [cam, set_cam] = useState<MediaStream | null>()
+    // const [cam_rejected, set_cam_rejected] = useState(false)
 
-    useEffect(() => {
-        let started: Promise<MediaStream> | null = null
-        let cancel = false
-        setTimeout(() => {
-            if (cancel) { return }
-            console.log("start");
+    // useEffect(() => {
+    //     let started: Promise<MediaStream> | null = null
+    //     let cancel = false
+    //     setTimeout(() => {
+    //         if (cancel) { return }
+    //         console.log("start");
 
-            started = navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } } })
-            started.then(v => set_cam(v)).catch(() => set_cam_rejected(true))
-        }, 100)
-        return () => {
-            cancel = true;
-            if (started != null) {
-                console.log("kill");
-                started.then(v => v.getTracks().forEach(t => v.removeTrack(t))).catch(() => { })
-            }
-        }
-    }, [try_])
+    //         started = navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } } })
+    //         started.then(v => set_cam(v)).catch(() => set_cam_rejected(true))
+    //     }, 100)
+    //     return () => {
+    //         cancel = true;
+    //         if (started != null) {
+    //             console.log("kill");
+    //             started.then(v => v.getTracks().forEach(t => v.removeTrack(t))).catch(() => { })
+    //         }
+    //     }
+    // }, [try_])
 
 
     // QrScanner.createQrEngine().then(v => alert(v))
 
 
-    return cam_rejected ? <>rejected <button onClick={() => {
-        set_cam_rejected(false)
-        set_try_(Symbol())
-    }}>retry</button> </> : cam ? <QRScan cam={cam} on_text={on_text} /> : <></>
+    return <QRScan cam={null as never} on_text={on_text} />
+
+    // return cam_rejected ? <>rejected <button onClick={() => {
+    //     set_cam_rejected(false)
+    //     set_try_(Symbol())
+    // }}>retry</button> </> : cam ? <QRScan cam={cam} on_text={on_text} /> : <></>
 }
 export function QRScan({ cam, on_text }: { cam: MediaStream, on_text: (s: string) => void }) {
     const vid_ref = useRef<HTMLVideoElement>(null)
@@ -88,7 +90,7 @@ export function QRScan({ cam, on_text }: { cam: MediaStream, on_text: (s: string
 
     const [attempt_num, set_attempt_num] = useState(0)
 
-    // const qrEngine = useMemo(() => QrScanner.createQrEngine(), [])
+    const qrEngine = useMemo(() => QrScanner.createQrEngine(), [])
 
     const text_prev = useMemo(() => ({ value: "---", n: 0 }), [])
     text_prev.value = text
@@ -144,7 +146,7 @@ export function QRScan({ cam, on_text }: { cam: MediaStream, on_text: (s: string
         return () => {
             qr.destroy()
         }
-    }, [text_prev, on_text])
+    }, [text_prev, qrEngine, on_text])
 
     return <>
         {text}
@@ -164,6 +166,9 @@ export function QRScan({ cam, on_text }: { cam: MediaStream, on_text: (s: string
             // })
         }}>test</button>
         <br />
-        <video ref={vid_ref} muted autoPlay playsInline style={{ maxWidth: "80vw" }} />
+        {/* <img src="./image.png" ref={vid_ref as never} style={{ display: "none" }} /> */}
+        {/* <img src="./image.png" ref={vid_ref as never} style={{ maxWidth: "80vw" }} /> */}
+        {/* <video ref={vid_ref} muted autoPlay playsInline style={{ maxWidth: "80vw" }} /> */}
+        <video ref={vid_ref} muted autoPlay playsInline />
     </>
 }
