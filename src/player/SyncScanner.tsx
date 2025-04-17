@@ -128,6 +128,7 @@ export function QRScan({ cam, on_text }: { cam: MediaStream, on_text: (s: string
                 } else {
                     ctx?.drawImage(v, -xs, -ys, 250 * width / d, 250 * height / d)
                 }
+                ctx!.filter = "contrast(2.0) opacity(0.3)"
                 // ctx?.drawImage(v, xs, ys, 250 * d / height, 250 * d / width)
             } else {
                 // ctx?.drawImage(v, 0, 0, 250, 250)
@@ -205,11 +206,21 @@ export function QRScan({ cam, on_text }: { cam: MediaStream, on_text: (s: string
             //     alert(e.cause)
             //     alert(e.stack)
             // })
+            // qrEngine.then(qrEngine => QrScanner.scanImage(vid_ref.current!, { qrEngine, })).then(res => {
+            qrEngine.then(qrEngine => QrScanner.scanImage(cnv_ref.current!, { qrEngine, })).then(res => {
+                alert("t:" + res.data + ";c:" + res.cornerPoints)
+            }).catch((e: Error) => {
+                alert("error " + (typeof e) + " " + e)
+                alert(e.name)
+                alert(e.message)
+                alert(e.cause)
+                alert(e.stack)
+            })
         }}>test</button>
         <button onClick={() => {
             alert(`x ${width}, ${height}`)
         }}>the</button>
-        zoom: <input type="checkbox" checked={do_zoom} onClick={e => set_do_zoom(e.currentTarget.checked)} />
+        zoom: <input type="checkbox" checked={do_zoom} onChange={e => set_do_zoom(e.currentTarget.checked)} />
         <br />
         {/* <img src="./image.png" ref={vid_ref as never} style={{ display: "none" }} /> */}
         {/* <img src="./image.png" ref={vid_ref as never} style={{ maxWidth: "80vw" }} /> */}
