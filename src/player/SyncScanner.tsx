@@ -137,9 +137,12 @@ export function QRScan({ cam, on_text }: { cam: MediaStream, on_text: (s: string
 
             qrEngine.then(qrEngine => QrScanner.scanImage(vid_ref.current!, { qrEngine })).then(res => {
                 alert("t:" + res.data + ";c:" + res.cornerPoints)
-            }).catch((e) => {
-                alert("no qr code")
-                throw e
+            }).catch((e: Error) => {
+                alert("error " + (typeof e) + " " + e)
+                alert(e.name)
+                alert(e.message)
+                alert(e.cause)
+                alert(e.stack)
             })
         }}>test</button>
         <br />
