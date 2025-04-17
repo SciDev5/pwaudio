@@ -169,6 +169,6 @@ export function QRScan({ cam, on_text }: { cam: MediaStream, on_text: (s: string
         {/* <img src="./image.png" ref={vid_ref as never} style={{ display: "none" }} /> */}
         {/* <img src="./image.png" ref={vid_ref as never} style={{ maxWidth: "80vw" }} /> */}
         {/* <video ref={vid_ref} muted autoPlay playsInline style={{ maxWidth: "80vw" }} /> */}
-        <video ref={vid_ref} muted autoPlay playsInline />
+        <video ref={vid_ref} muted autoPlay playsInline width={300} />
     </>
 }
