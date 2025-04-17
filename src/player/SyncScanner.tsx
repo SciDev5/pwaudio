@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 
 import QrScanner from "qr-scanner"
+import { usePassthroughMemo } from "@/util/react"
 
 
 // type BarcodeFormat = "qr_code" | "data_matrix"
@@ -91,6 +92,9 @@ export function QRScan({ cam, on_text }: { cam: MediaStream, on_text: (s: string
 
     const [attempt_num, set_attempt_num] = useState(0)
 
+
+    const [do_zoom, set_do_zoom] = useState(false)
+
     const cnv_ref = useRef<null | HTMLCanvasElement>(null)
     // const [ctx, set_ctx] = useState<CanvasRenderingContext2D | null>(null)
 
@@ -100,19 +104,30 @@ export function QRScan({ cam, on_text }: { cam: MediaStream, on_text: (s: string
     text_prev.value = text
     text_prev.n = attempt_num
 
-    const { width, height } = cam.getVideoTracks()[0].getSettings()
+    const sett = cam.getVideoTracks()[0].getSettings()
+    const width = sett.width ?? vid_ref.current?.clientWidth
+    const height = sett.height ?? vid_ref.current?.clientHeight
+
+    const the2 = usePassthroughMemo({ do_zoom, width, height })
+
     useEffect(() => {
         const ctx = cnv_ref.current!.getContext("2d")
         setInterval(() => {
 
             const v = vid_ref.current!
 
+            const { do_zoom, width, height } = the2
             console.log("x", width, height);
             if (width != null && height != null) {
                 const d = Math.min(width, height)
                 const xs = Math.floor((width - d) / 4)
                 const ys = Math.floor((height - d) / 4)
-                ctx?.drawImage(v, -xs, -ys, 250 * width / d, 250 * height / d)
+                const r = 250
+                if (do_zoom) {
+                    ctx?.drawImage(v, (-r / 2 - xs) * 2 + r / 2, (-r / 2 - ys) * 2 + r / 2, 250 * width / d * 2, 250 * height / d * 2)
+                } else {
+                    ctx?.drawImage(v, -xs, -ys, 250 * width / d, 250 * height / d)
+                }
                 // ctx?.drawImage(v, xs, ys, 250 * d / height, 250 * d / width)
             } else {
                 // ctx?.drawImage(v, 0, 0, 250, 250)
@@ -191,6 +206,10 @@ export function QRScan({ cam, on_text }: { cam: MediaStream, on_text: (s: string
             //     alert(e.stack)
             // })
         }}>test</button>
+        <button onClick={() => {
+            alert(`x ${width}, ${height}`)
+        }}>the</button>
+        zoom: <input type="checkbox" checked={do_zoom} onClick={e => set_do_zoom(e.currentTarget.checked)} />
         <br />
         {/* <img src="./image.png" ref={vid_ref as never} style={{ display: "none" }} /> */}
         {/* <img src="./image.png" ref={vid_ref as never} style={{ maxWidth: "80vw" }} /> */}
